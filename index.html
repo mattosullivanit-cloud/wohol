@@ -572,6 +572,42 @@
             color: var(--red);
         }
 
+        /* Success confirmation inline */
+        .success-confirmation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: rgba(255, 0, 51, 0.1);
+            border: 1px solid var(--red);
+            border-radius: 8px;
+        }
+
+        .success-icon-small {
+            width: 32px;
+            height: 32px;
+            background: var(--red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .success-icon-small svg {
+            width: 18px;
+            height: 18px;
+            color: var(--white);
+        }
+
+        .success-text-small {
+            font-size: 0.95rem;
+            color: var(--white);
+            font-weight: 500;
+        }
+
         /* Footer */
         footer {
             margin-top: auto;
@@ -728,13 +764,44 @@
                 </div>
             </div>
 
-            <!-- Main message view -->
-            <div id="message-screen" class="screen">
+            <!-- Write first screen (new default) -->
+            <div id="write-screen" class="screen">
                 <div class="message-card">
-                    <div class="message-label">Incoming Transmission</div>
+                    <div class="message-label">Your Turn First</div>
+                    <p class="message-text" style="font-size: 1.5rem;">Before you receive a message, share one with the next person in the chain.</p>
+                </div>
+
+                <div class="response-section">
+                    <div class="section-header">
+                        <span class="section-number">01</span>
+                        <div class="section-title-group">
+                            <h2 class="section-title">WRITE YOUR MESSAGE</h2>
+                            <p class="section-subtitle">What does someone out there need to hear today?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="textarea-wrapper">
+                        <textarea 
+                            id="user-message" 
+                            placeholder="Share motivation, encouragement, or wisdom..."
+                            maxlength="500"
+                        ></textarea>
+                        <span class="char-count" id="char-count">0 / 500</span>
+                    </div>
+
+                    <button class="btn-primary" id="send-btn" disabled>
+                        SEND & REVEAL YOUR MESSAGE →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Reveal screen (shown after they submit) -->
+            <div id="reveal-screen" class="screen">
+                <div class="message-card">
+                    <div class="message-label">Your Reward</div>
                     <p class="message-text" id="message-content"></p>
                     <div class="message-footer">
-                        <span class="message-meta">From someone chasing greatness</span>
+                        <span class="message-meta">From someone who was here before you</span>
                         <span class="chain-count">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
@@ -745,31 +812,39 @@
                     </div>
                 </div>
 
-                <div class="response-section">
-                    <div class="section-header">
-                        <span class="section-number">02</span>
-                        <div class="section-title-group">
-                            <h2 class="section-title">YOUR TURN. PASS IT ON.</h2>
-                            <p class="section-subtitle">Drop some fire for the next person in the chain.</p>
-                        </div>
+                <div class="success-confirmation">
+                    <div class="success-icon-small">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M20 6L9 17l-5-5"/>
+                        </svg>
                     </div>
-                    
-                    <div class="textarea-wrapper">
-                        <textarea 
-                            id="user-message" 
-                            placeholder="What's the mindset that keeps you going? Share it..."
-                            maxlength="500"
-                        ></textarea>
-                        <span class="char-count" id="char-count">0 / 500</span>
-                    </div>
-
-                    <button class="btn-primary" id="send-btn" disabled>
-                        SEND IT →
-                    </button>
+                    <p class="success-text-small">Your message is now waiting for the next person</p>
                 </div>
+
+                <button class="btn-secondary" id="read-another-btn">READ ANOTHER MESSAGE</button>
             </div>
 
-            <!-- First visitor -->
+            <!-- Reading more (after first contribution) -->
+            <div id="browse-screen" class="screen">
+                <div class="message-card">
+                    <div class="message-label">From The Chain</div>
+                    <p class="message-text" id="browse-message-content"></p>
+                    <div class="message-footer">
+                        <span class="message-meta">From someone chasing greatness</span>
+                        <span class="chain-count">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                            </svg>
+                            <span id="browse-chain-number">LINK #1</span>
+                        </span>
+                    </div>
+                </div>
+
+                <button class="btn-secondary" id="another-btn">READ ANOTHER</button>
+            </div>
+
+            <!-- First visitor (no messages yet) -->
             <div id="first-screen" class="screen">
                 <div class="message-card">
                     <div class="empty-state">
@@ -802,17 +877,16 @@
                 </div>
             </div>
 
-            <!-- Success state -->
-            <div id="success-screen" class="screen">
+            <!-- Success for first person -->
+            <div id="first-success-screen" class="screen">
                 <div class="success-message">
                     <div class="success-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <path d="M20 6L9 17l-5-5"/>
                         </svg>
                     </div>
-                    <h2 class="success-title">MESSAGE LOCKED IN</h2>
-                    <p class="success-text">Your words are queued up for the next person grinding through life. The chain continues.</p>
-                    <button class="btn-secondary" id="new-message-btn">GET ANOTHER MESSAGE</button>
+                    <h2 class="success-title">CHAIN STARTED</h2>
+                    <p class="success-text">You've planted the first seed. Your message is now waiting for the next person to find it.</p>
                 </div>
             </div>
         </main>
@@ -824,14 +898,14 @@
     </div>
 
     <script>
-        // WOHOL App - Supabase Database Version
+        // WOHOL App - Write First, Then Reveal Flow
         const SUPABASE_URL = 'https://fexyfuwprtcqsxnjxvsr.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_8rD8nOC9gHVCnFAbHEkU4g_UXhTeqc8';
 
         class WOHOLApp {
             constructor() {
                 this.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                this.currentMessageId = null;
+                this.hasContributed = false;
                 this.init();
             }
 
@@ -842,7 +916,6 @@
 
             async getRandomMessage() {
                 try {
-                    // Get count of messages
                     const { count } = await this.supabase
                         .from('messages')
                         .select('*', { count: 'exact', head: true })
@@ -850,10 +923,8 @@
 
                     if (!count || count === 0) return null;
 
-                    // Get random offset
                     const randomOffset = Math.floor(Math.random() * count);
 
-                    // Fetch one random message
                     const { data, error } = await this.supabase
                         .from('messages')
                         .select('*')
@@ -863,7 +934,6 @@
 
                     if (error) throw error;
 
-                    // Increment view count
                     if (data) {
                         await this.supabase
                             .from('messages')
@@ -896,13 +966,11 @@
 
             async getStats() {
                 try {
-                    // Total count
                     const { count: total } = await this.supabase
                         .from('messages')
                         .select('*', { count: 'exact', head: true })
                         .eq('is_approved', true);
 
-                    // Today's count
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
                     
@@ -936,6 +1004,14 @@
                 }
             }
 
+            async hasMessages() {
+                const { count } = await this.supabase
+                    .from('messages')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('is_approved', true);
+                return count > 0;
+            }
+
             async updateStats() {
                 const stats = await this.getStats();
                 document.getElementById('total-messages').textContent = stats.total.toLocaleString();
@@ -952,17 +1028,15 @@
             async loadApp() {
                 try {
                     await this.updateStats();
-                    const message = await this.getRandomMessage();
-
-                    if (message) {
-                        this.currentMessageId = message.id;
-                        document.getElementById('message-content').textContent = message.content;
-                        
-                        const position = await this.getMessagePosition(message.id);
-                        document.getElementById('chain-number').textContent = `LINK #${position}`;
-                        
-                        this.showScreen('message-screen');
+                    
+                    // Check if there are any messages
+                    const hasMessages = await this.hasMessages();
+                    
+                    if (hasMessages) {
+                        // Show write screen - they must contribute first
+                        this.showScreen('write-screen');
                     } else {
+                        // First person ever - show first screen
                         this.showScreen('first-screen');
                     }
                 } catch (e) {
@@ -971,7 +1045,29 @@
                 }
             }
 
+            async showRevealScreen() {
+                const message = await this.getRandomMessage();
+                if (message) {
+                    document.getElementById('message-content').textContent = message.content;
+                    const position = await this.getMessagePosition(message.id);
+                    document.getElementById('chain-number').textContent = `LINK #${position}`;
+                }
+                this.showScreen('reveal-screen');
+            }
+
+            async showBrowseScreen() {
+                this.showScreen('loading-screen');
+                const message = await this.getRandomMessage();
+                if (message) {
+                    document.getElementById('browse-message-content').textContent = message.content;
+                    const position = await this.getMessagePosition(message.id);
+                    document.getElementById('browse-chain-number').textContent = `LINK #${position}`;
+                }
+                this.showScreen('browse-screen');
+            }
+
             bindEvents() {
+                // Main write screen
                 const textarea = document.getElementById('user-message');
                 const charCount = document.getElementById('char-count');
                 const sendBtn = document.getElementById('send-btn');
@@ -995,16 +1091,18 @@
                             try {
                                 await this.saveMessage(message);
                                 await this.updateStats();
-                                this.showScreen('success-screen');
+                                this.hasContributed = true;
+                                await this.showRevealScreen();
                             } catch (e) {
                                 alert('Failed to send message. Please try again.');
                                 sendBtn.disabled = false;
-                                sendBtn.textContent = 'SEND IT →';
+                                sendBtn.textContent = 'SEND & REVEAL YOUR MESSAGE →';
                             }
                         }
                     });
                 }
 
+                // First person screen
                 const firstTextarea = document.getElementById('first-message');
                 const firstCharCount = document.getElementById('first-char-count');
                 const firstSendBtn = document.getElementById('first-send-btn');
@@ -1028,7 +1126,7 @@
                             try {
                                 await this.saveMessage(message);
                                 await this.updateStats();
-                                this.showScreen('success-screen');
+                                this.showScreen('first-success-screen');
                             } catch (e) {
                                 alert('Failed to send message. Please try again.');
                                 firstSendBtn.disabled = false;
@@ -1038,20 +1136,19 @@
                     });
                 }
 
-                const newMessageBtn = document.getElementById('new-message-btn');
-                if (newMessageBtn) {
-                    newMessageBtn.addEventListener('click', () => {
-                        this.showScreen('loading-screen');
-                        
-                        // Reset textarea
-                        if (textarea) {
-                            textarea.value = '';
-                            charCount.textContent = '0 / 500';
-                            sendBtn.disabled = true;
-                            sendBtn.textContent = 'SEND IT →';
-                        }
-                        
-                        setTimeout(() => this.loadApp(), 500);
+                // Read another button (on reveal screen)
+                const readAnotherBtn = document.getElementById('read-another-btn');
+                if (readAnotherBtn) {
+                    readAnotherBtn.addEventListener('click', () => {
+                        this.showBrowseScreen();
+                    });
+                }
+
+                // Another button (on browse screen)
+                const anotherBtn = document.getElementById('another-btn');
+                if (anotherBtn) {
+                    anotherBtn.addEventListener('click', () => {
+                        this.showBrowseScreen();
                     });
                 }
             }
