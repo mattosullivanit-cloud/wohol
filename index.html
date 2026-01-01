@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --black: #0A0A0A;
@@ -823,74 +824,120 @@
     </div>
 
     <script>
-        // WOHOL App - Anonymous Motivational Message Chain
-        // localStorage version for demo
+        // WOHOL App - Supabase Database Version
+        const SUPABASE_URL = 'https://fexyfuwprtcqsxnjxvsr.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_8rD8nOC9gHVCnFAbHEkU4g_UXhTeqc8';
 
         class WOHOLApp {
             constructor() {
-                this.storageKey = 'wohol_messages';
+                this.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                this.currentMessageId = null;
                 this.init();
             }
 
-            init() {
+            async init() {
                 this.bindEvents();
-                this.loadApp();
+                await this.loadApp();
             }
 
-            getMessages() {
-                const data = localStorage.getItem(this.storageKey);
-                return data ? JSON.parse(data) : [];
-            }
+            async getRandomMessage() {
+                try {
+                    // Get count of messages
+                    const { count } = await this.supabase
+                        .from('messages')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('is_approved', true);
 
-            saveMessage(message) {
-                const messages = this.getMessages();
-                const newMessage = {
-                    id: Date.now(),
-                    text: message,
-                    timestamp: new Date().toISOString(),
-                    read: false
-                };
-                messages.push(newMessage);
-                localStorage.setItem(this.storageKey, JSON.stringify(messages));
-                this.updateStats();
-                return newMessage;
-            }
+                    if (!count || count === 0) return null;
 
-            getRandomUnreadMessage() {
-                const messages = this.getMessages();
-                const unread = messages.filter(m => !m.read);
-                const pool = unread.length > 0 ? unread : messages;
-                
-                if (pool.length === 0) return null;
-                
-                const randomIndex = Math.floor(Math.random() * pool.length);
-                const message = pool[randomIndex];
-                
-                const allMessages = this.getMessages();
-                const msgIndex = allMessages.findIndex(m => m.id === message.id);
-                if (msgIndex !== -1) {
-                    allMessages[msgIndex].read = true;
-                    localStorage.setItem(this.storageKey, JSON.stringify(allMessages));
+                    // Get random offset
+                    const randomOffset = Math.floor(Math.random() * count);
+
+                    // Fetch one random message
+                    const { data, error } = await this.supabase
+                        .from('messages')
+                        .select('*')
+                        .eq('is_approved', true)
+                        .range(randomOffset, randomOffset)
+                        .single();
+
+                    if (error) throw error;
+
+                    // Increment view count
+                    if (data) {
+                        await this.supabase
+                            .from('messages')
+                            .update({ view_count: (data.view_count || 0) + 1 })
+                            .eq('id', data.id);
+                    }
+
+                    return data;
+                } catch (e) {
+                    console.error('Error fetching message:', e);
+                    return null;
                 }
-                
-                return message;
             }
 
-            getStats() {
-                const messages = this.getMessages();
-                const today = new Date().toDateString();
-                const todayMessages = messages.filter(m => 
-                    new Date(m.timestamp).toDateString() === today
-                );
-                
-                return {
-                    total: messages.length,
-                    today: todayMessages.length
-                };
+            async saveMessage(content) {
+                try {
+                    const { data, error } = await this.supabase
+                        .from('messages')
+                        .insert([{ content }])
+                        .select()
+                        .single();
+
+                    if (error) throw error;
+                    return data;
+                } catch (e) {
+                    console.error('Error saving message:', e);
+                    throw e;
+                }
             }
 
-            updateStats() {
-                const stats = this.getStats();
+            async getStats() {
+                try {
+                    // Total count
+                    const { count: total } = await this.supabase
+                        .from('messages')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('is_approved', true);
+
+                    // Today's count
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    const { count: todayCount } = await this.supabase
+                        .from('messages')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('is_approved', true)
+                        .gte('created_at', today.toISOString());
+
+                    return {
+                        total: total || 0,
+                        today: todayCount || 0
+                    };
+                } catch (e) {
+                    console.error('Error fetching stats:', e);
+                    return { total: 0, today: 0 };
+                }
+            }
+
+            async getMessagePosition(id) {
+                try {
+                    const { count } = await this.supabase
+                        .from('messages')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('is_approved', true)
+                        .lte('id', id);
+
+                    return count || 1;
+                } catch (e) {
+                    return 1;
+                }
+            }
+
+            async updateStats() {
+                const stats = await this.getStats();
                 document.getElementById('total-messages').textContent = stats.total.toLocaleString();
                 document.getElementById('messages-today').textContent = stats.today.toLocaleString();
             }
@@ -902,21 +949,26 @@
                 document.getElementById(screenId).classList.add('active');
             }
 
-            loadApp() {
-                setTimeout(() => {
-                    this.updateStats();
-                    const message = this.getRandomUnreadMessage();
-                    
+            async loadApp() {
+                try {
+                    await this.updateStats();
+                    const message = await this.getRandomMessage();
+
                     if (message) {
-                        document.getElementById('message-content').textContent = message.text;
-                        const messages = this.getMessages();
-                        const position = messages.findIndex(m => m.id === message.id) + 1;
+                        this.currentMessageId = message.id;
+                        document.getElementById('message-content').textContent = message.content;
+                        
+                        const position = await this.getMessagePosition(message.id);
                         document.getElementById('chain-number').textContent = `LINK #${position}`;
+                        
                         this.showScreen('message-screen');
                     } else {
                         this.showScreen('first-screen');
                     }
-                }, 800);
+                } catch (e) {
+                    console.error('Error loading app:', e);
+                    this.showScreen('first-screen');
+                }
             }
 
             bindEvents() {
@@ -934,11 +986,21 @@
                 }
 
                 if (sendBtn) {
-                    sendBtn.addEventListener('click', () => {
+                    sendBtn.addEventListener('click', async () => {
                         const message = textarea.value.trim();
                         if (message.length >= 10) {
-                            this.saveMessage(message);
-                            this.showScreen('success-screen');
+                            sendBtn.disabled = true;
+                            sendBtn.textContent = 'SENDING...';
+                            
+                            try {
+                                await this.saveMessage(message);
+                                await this.updateStats();
+                                this.showScreen('success-screen');
+                            } catch (e) {
+                                alert('Failed to send message. Please try again.');
+                                sendBtn.disabled = false;
+                                sendBtn.textContent = 'SEND IT →';
+                            }
                         }
                     });
                 }
@@ -957,11 +1019,21 @@
                 }
 
                 if (firstSendBtn) {
-                    firstSendBtn.addEventListener('click', () => {
+                    firstSendBtn.addEventListener('click', async () => {
                         const message = firstTextarea.value.trim();
                         if (message.length >= 10) {
-                            this.saveMessage(message);
-                            this.showScreen('success-screen');
+                            firstSendBtn.disabled = true;
+                            firstSendBtn.textContent = 'SENDING...';
+                            
+                            try {
+                                await this.saveMessage(message);
+                                await this.updateStats();
+                                this.showScreen('success-screen');
+                            } catch (e) {
+                                alert('Failed to send message. Please try again.');
+                                firstSendBtn.disabled = false;
+                                firstSendBtn.textContent = 'LAUNCH IT →';
+                            }
                         }
                     });
                 }
@@ -970,14 +1042,16 @@
                 if (newMessageBtn) {
                     newMessageBtn.addEventListener('click', () => {
                         this.showScreen('loading-screen');
-                        setTimeout(() => {
-                            if (textarea) {
-                                textarea.value = '';
-                                charCount.textContent = '0 / 500';
-                                sendBtn.disabled = true;
-                            }
-                            this.loadApp();
-                        }, 500);
+                        
+                        // Reset textarea
+                        if (textarea) {
+                            textarea.value = '';
+                            charCount.textContent = '0 / 500';
+                            sendBtn.disabled = true;
+                            sendBtn.textContent = 'SEND IT →';
+                        }
+                        
+                        setTimeout(() => this.loadApp(), 500);
                     });
                 }
             }
