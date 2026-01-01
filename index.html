@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOHOL - We Only Have One Life</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #0A0A0A;
+            --dark: #141414;
+            --darker: #1A1A1A;
+            --gray-dark: #2A2A2A;
+            --gray: #666666;
+            --gray-light: #999999;
+            --white: #FFFFFF;
+            --off-white: #F5F5F5;
+            --red: #FF0033;
+            --red-dim: #CC0029;
+            --red-glow: rgba(255, 0, 51, 0.15);
+            --red-light: #FF3355;
+            --red-light-glow: rgba(255, 51, 85, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--black);
+            color: var(--white);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Aggressive geometric background */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bg-pattern::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 100px,
+                    rgba(255, 255, 255, 0.01) 100px,
+                    rgba(255, 255, 255, 0.01) 101px
+                ),
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 100px,
+                    rgba(255, 255, 255, 0.01) 100px,
+                    rgba(255, 255, 255, 0.01) 101px
+                );
+        }
+
+        .glow-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .glow-orb-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--red-glow);
+            top: -200px;
+            right: -200px;
+            animation: pulse1 8s ease-in-out infinite;
+        }
+
+        .glow-orb-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--red-light-glow);
+            bottom: -100px;
+            left: -100px;
+            animation: pulse2 10s ease-in-out infinite;
+        }
+
+        @keyframes pulse1 {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        @keyframes pulse2 {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.15); }
+        }
+
+        /* Diagonal accent lines */
+        .accent-line {
+            position: fixed;
+            background: linear-gradient(180deg, var(--red) 0%, transparent 100%);
+            width: 2px;
+            height: 200px;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .accent-line-1 { top: 0; left: 15%; transform: rotate(15deg); }
+        .accent-line-2 { top: 0; right: 20%; transform: rotate(-10deg); height: 300px; }
+        .accent-line-3 { bottom: 0; left: 30%; transform: rotate(20deg); background: linear-gradient(0deg, var(--red-light) 0%, transparent 100%); }
+
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 24px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(4rem, 15vw, 8rem);
+            letter-spacing: 0.1em;
+            line-height: 0.9;
+            background: linear-gradient(135deg, var(--white) 0%, var(--gray-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--red), transparent);
+        }
+
+        .tagline {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 0.3em;
+            color: var(--red);
+            margin-top: 16px;
+            text-transform: uppercase;
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            margin-bottom: 48px;
+            padding: 20px;
+            background: var(--dark);
+            border: 1px solid var(--gray-dark);
+            border-radius: 8px;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            color: var(--white);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+
+        /* Message card */
+        .message-card {
+            background: var(--dark);
+            border: 1px solid var(--gray-dark);
+            border-radius: 12px;
+            padding: 48px 40px;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--red), var(--red-light));
+        }
+
+        .message-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--red);
+            margin-bottom: 24px;
+        }
+
+        .message-label::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--red);
+            border-radius: 50%;
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .message-text {
+            font-size: clamp(1.5rem, 4vw, 2.25rem);
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--white);
+        }
+
+        .message-footer {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--gray-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .message-meta {
+            font-size: 0.8rem;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .chain-count {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--red);
+            letter-spacing: 0.05em;
+        }
+
+        .chain-count svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Response section */
+        .response-section {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .section-number {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3rem;
+            color: var(--gray-dark);
+            line-height: 1;
+        }
+
+        .section-title-group {
+            flex: 1;
+        }
+
+        .section-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.75rem;
+            letter-spacing: 0.05em;
+            color: var(--white);
+        }
+
+        .section-subtitle {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+
+        .textarea-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 160px;
+            padding: 24px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 500;
+            line-height: 1.6;
+            color: var(--white);
+            background: var(--darker);
+            border: 2px solid var(--gray-dark);
+            border-radius: 8px;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        textarea::placeholder {
+            color: var(--gray);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--red);
+            box-shadow: 0 0 0 4px var(--red-glow);
+        }
+
+        .char-count {
+            position: absolute;
+            bottom: 16px;
+            right: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray);
+        }
+
+        .char-count.warning {
+            color: var(--red);
+        }
+
+        /* Button */
+        .btn-primary {
+            display: block;
+            width: 100%;
+            padding: 20px 32px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.25rem;
+            letter-spacing: 0.15em;
+            color: var(--white);
+            background: linear-gradient(135deg, var(--red) 0%, var(--red-dim) 100%);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(255, 0, 51, 0.4);
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary:disabled:hover {
+            box-shadow: none;
+        }
+
+        .btn-primary:disabled:hover::before {
+            left: -100%;
+        }
+
+        /* Success state */
+        .success-message {
+            text-align: center;
+            padding: 60px 40px;
+            background: var(--dark);
+            border: 1px solid var(--gray-dark);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            animation: successPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .success-message::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--red), var(--red-light));
+        }
+
+        @keyframes successPop {
+            0% {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 24px;
+            background: var(--red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .success-icon::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border: 2px solid var(--red);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: ringPulse 2s ease-out infinite;
+        }
+
+        @keyframes ringPulse {
+            0% { transform: scale(1); opacity: 0.3; }
+            100% { transform: scale(1.3); opacity: 0; }
+        }
+
+        .success-icon svg {
+            width: 50px;
+            height: 50px;
+            color: var(--black);
+        }
+
+        .success-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: 0.05em;
+            color: var(--white);
+            margin-bottom: 12px;
+        }
+
+        .success-text {
+            color: var(--gray-light);
+            line-height: 1.6;
+            margin-bottom: 32px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn-secondary {
+            display: inline-block;
+            padding: 16px 32px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1rem;
+            letter-spacing: 0.15em;
+            color: var(--white);
+            background: transparent;
+            border: 2px solid var(--gray-dark);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        /* Footer */
+        footer {
+            margin-top: auto;
+            padding-top: 60px;
+            text-align: center;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.7s both;
+        }
+
+        .footer-motto {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 0.2em;
+            color: var(--gray-dark);
+            margin-bottom: 16px;
+        }
+
+        .footer-text {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        /* Loading state */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 80px;
+        }
+
+        .loading-bar {
+            width: 200px;
+            height: 4px;
+            background: var(--gray-dark);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .loading-bar::after {
+            content: '';
+            display: block;
+            width: 40%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--red), var(--red-light));
+            border-radius: 2px;
+            animation: loadingSlide 1s ease-in-out infinite;
+        }
+
+        @keyframes loadingSlide {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(350%); }
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-text {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 0.05em;
+            color: var(--gray);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 40px 20px;
+            }
+
+            .message-card {
+                padding: 32px 24px;
+            }
+
+            .stats-bar {
+                gap: 24px;
+                padding: 16px;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .message-footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .section-number {
+                font-size: 2rem;
+            }
+        }
+
+        /* Screen states */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="accent-line accent-line-1"></div>
+    <div class="accent-line accent-line-2"></div>
+    <div class="accent-line accent-line-3"></div>
+
+    <div class="container">
+        <header>
+            <h1 class="logo">WOHOL</h1>
+            <p class="tagline">We Only Have One Life</p>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat">
+                <div class="stat-number" id="total-messages">0</div>
+                <div class="stat-label">Messages Sent</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="messages-today">0</div>
+                <div class="stat-label">Today</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="chain-length">∞</div>
+                <div class="stat-label">Chain Growing</div>
+            </div>
+        </div>
+
+        <main id="app">
+            <!-- Loading state -->
+            <div id="loading-screen" class="screen active">
+                <div class="loading">
+                    <div class="loading-bar"></div>
+                </div>
+            </div>
+
+            <!-- Main message view -->
+            <div id="message-screen" class="screen">
+                <div class="message-card">
+                    <div class="message-label">Incoming Transmission</div>
+                    <p class="message-text" id="message-content"></p>
+                    <div class="message-footer">
+                        <span class="message-meta">From someone chasing greatness</span>
+                        <span class="chain-count">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                            </svg>
+                            <span id="chain-number">LINK #1</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="response-section">
+                    <div class="section-header">
+                        <span class="section-number">02</span>
+                        <div class="section-title-group">
+                            <h2 class="section-title">YOUR TURN. PASS IT ON.</h2>
+                            <p class="section-subtitle">Drop some fire for the next person in the chain.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="textarea-wrapper">
+                        <textarea 
+                            id="user-message" 
+                            placeholder="What's the mindset that keeps you going? Share it..."
+                            maxlength="500"
+                        ></textarea>
+                        <span class="char-count" id="char-count">0 / 500</span>
+                    </div>
+
+                    <button class="btn-primary" id="send-btn" disabled>
+                        SEND IT →
+                    </button>
+                </div>
+            </div>
+
+            <!-- First visitor -->
+            <div id="first-screen" class="screen">
+                <div class="message-card">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔥</div>
+                        <p class="empty-state-text">You're first. Set the tone.</p>
+                    </div>
+                </div>
+
+                <div class="response-section">
+                    <div class="section-header">
+                        <span class="section-number">01</span>
+                        <div class="section-title-group">
+                            <h2 class="section-title">START THE CHAIN</h2>
+                            <p class="section-subtitle">Your words will reach someone who needs them.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="textarea-wrapper">
+                        <textarea 
+                            id="first-message" 
+                            placeholder="What's the mindset that keeps you going? Share it..."
+                            maxlength="500"
+                        ></textarea>
+                        <span class="char-count" id="first-char-count">0 / 500</span>
+                    </div>
+
+                    <button class="btn-primary" id="first-send-btn" disabled>
+                        LAUNCH IT →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Success state -->
+            <div id="success-screen" class="screen">
+                <div class="success-message">
+                    <div class="success-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M20 6L9 17l-5-5"/>
+                        </svg>
+                    </div>
+                    <h2 class="success-title">MESSAGE LOCKED IN</h2>
+                    <p class="success-text">Your words are queued up for the next person grinding through life. The chain continues.</p>
+                    <button class="btn-secondary" id="new-message-btn">GET ANOTHER MESSAGE</button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p class="footer-motto">NO EXCUSES. NO REGRETS.</p>
+            <p class="footer-text">Anonymous messages. Real impact.</p>
+        </footer>
+    </div>
+
+    <script>
+        // WOHOL App - Anonymous Motivational Message Chain
+        // localStorage version for demo
+
+        class WOHOLApp {
+            constructor() {
+                this.storageKey = 'wohol_messages';
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.loadApp();
+            }
+
+            getMessages() {
+                const data = localStorage.getItem(this.storageKey);
+                return data ? JSON.parse(data) : [];
+            }
+
+            saveMessage(message) {
+                const messages = this.getMessages();
+                const newMessage = {
+                    id: Date.now(),
+                    text: message,
+                    timestamp: new Date().toISOString(),
+                    read: false
+                };
+                messages.push(newMessage);
+                localStorage.setItem(this.storageKey, JSON.stringify(messages));
+                this.updateStats();
+                return newMessage;
+            }
+
+            getRandomUnreadMessage() {
+                const messages = this.getMessages();
+                const unread = messages.filter(m => !m.read);
+                const pool = unread.length > 0 ? unread : messages;
+                
+                if (pool.length === 0) return null;
+                
+                const randomIndex = Math.floor(Math.random() * pool.length);
+                const message = pool[randomIndex];
+                
+                const allMessages = this.getMessages();
+                const msgIndex = allMessages.findIndex(m => m.id === message.id);
+                if (msgIndex !== -1) {
+                    allMessages[msgIndex].read = true;
+                    localStorage.setItem(this.storageKey, JSON.stringify(allMessages));
+                }
+                
+                return message;
+            }
+
+            getStats() {
+                const messages = this.getMessages();
+                const today = new Date().toDateString();
+                const todayMessages = messages.filter(m => 
+                    new Date(m.timestamp).toDateString() === today
+                );
+                
+                return {
+                    total: messages.length,
+                    today: todayMessages.length
+                };
+            }
+
+            updateStats() {
+                const stats = this.getStats();
+                document.getElementById('total-messages').textContent = stats.total.toLocaleString();
+                document.getElementById('messages-today').textContent = stats.today.toLocaleString();
+            }
+
+            showScreen(screenId) {
+                document.querySelectorAll('.screen').forEach(screen => {
+                    screen.classList.remove('active');
+                });
+                document.getElementById(screenId).classList.add('active');
+            }
+
+            loadApp() {
+                setTimeout(() => {
+                    this.updateStats();
+                    const message = this.getRandomUnreadMessage();
+                    
+                    if (message) {
+                        document.getElementById('message-content').textContent = message.text;
+                        const messages = this.getMessages();
+                        const position = messages.findIndex(m => m.id === message.id) + 1;
+                        document.getElementById('chain-number').textContent = `LINK #${position}`;
+                        this.showScreen('message-screen');
+                    } else {
+                        this.showScreen('first-screen');
+                    }
+                }, 800);
+            }
+
+            bindEvents() {
+                const textarea = document.getElementById('user-message');
+                const charCount = document.getElementById('char-count');
+                const sendBtn = document.getElementById('send-btn');
+
+                if (textarea) {
+                    textarea.addEventListener('input', () => {
+                        const len = textarea.value.length;
+                        charCount.textContent = `${len} / 500`;
+                        charCount.classList.toggle('warning', len > 450);
+                        sendBtn.disabled = len < 10 || len > 500;
+                    });
+                }
+
+                if (sendBtn) {
+                    sendBtn.addEventListener('click', () => {
+                        const message = textarea.value.trim();
+                        if (message.length >= 10) {
+                            this.saveMessage(message);
+                            this.showScreen('success-screen');
+                        }
+                    });
+                }
+
+                const firstTextarea = document.getElementById('first-message');
+                const firstCharCount = document.getElementById('first-char-count');
+                const firstSendBtn = document.getElementById('first-send-btn');
+
+                if (firstTextarea) {
+                    firstTextarea.addEventListener('input', () => {
+                        const len = firstTextarea.value.length;
+                        firstCharCount.textContent = `${len} / 500`;
+                        firstCharCount.classList.toggle('warning', len > 450);
+                        firstSendBtn.disabled = len < 10 || len > 500;
+                    });
+                }
+
+                if (firstSendBtn) {
+                    firstSendBtn.addEventListener('click', () => {
+                        const message = firstTextarea.value.trim();
+                        if (message.length >= 10) {
+                            this.saveMessage(message);
+                            this.showScreen('success-screen');
+                        }
+                    });
+                }
+
+                const newMessageBtn = document.getElementById('new-message-btn');
+                if (newMessageBtn) {
+                    newMessageBtn.addEventListener('click', () => {
+                        this.showScreen('loading-screen');
+                        setTimeout(() => {
+                            if (textarea) {
+                                textarea.value = '';
+                                charCount.textContent = '0 / 500';
+                                sendBtn.disabled = true;
+                            }
+                            this.loadApp();
+                        }, 500);
+                    });
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new WOHOLApp();
+        });
+    </script>
+</body>
+</html>
