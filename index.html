@@ -414,6 +414,56 @@
             color: var(--red);
         }
 
+        /* Identity fields */
+        .identity-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--gray);
+        }
+
+        .input-group input {
+            padding: 14px 18px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--white);
+            background: var(--darker);
+            border: 2px solid var(--gray-dark);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input::placeholder {
+            color: var(--gray);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--red);
+            box-shadow: 0 0 0 4px var(--red-glow);
+        }
+
+        @media (max-width: 500px) {
+            .identity-fields {
+                grid-template-columns: 1fr;
+            }
+        }
+
         /* Button */
         .btn-primary {
             display: block;
@@ -744,11 +794,11 @@
         <div class="stats-bar">
             <div class="stat">
                 <div class="stat-number" id="total-messages">0</div>
-                <div class="stat-label">Messages Sent</div>
+                <div class="stat-label">Messages Shared</div>
             </div>
             <div class="stat">
-                <div class="stat-number" id="messages-today">0</div>
-                <div class="stat-label">Today</div>
+                <div class="stat-number" id="people-count">0</div>
+                <div class="stat-label">People Connected</div>
             </div>
             <div class="stat">
                 <div class="stat-number" id="chain-length">∞</div>
@@ -789,6 +839,17 @@
                         <span class="char-count" id="char-count">0 / 500</span>
                     </div>
 
+                    <div class="identity-fields">
+                        <div class="input-group">
+                            <label for="user-name">Your first name</label>
+                            <input type="text" id="user-name" placeholder="Dave" maxlength="50">
+                        </div>
+                        <div class="input-group">
+                            <label for="user-location">Where you're from</label>
+                            <input type="text" id="user-location" placeholder="England" maxlength="100">
+                        </div>
+                    </div>
+
                     <button class="btn-primary" id="send-btn" disabled>
                         SEND & REVEAL YOUR MESSAGE →
                     </button>
@@ -801,7 +862,7 @@
                     <div class="message-label">This One's For You</div>
                     <p class="message-text" id="message-content"></p>
                     <div class="message-footer">
-                        <span class="message-meta">From someone who's been where you are</span>
+                        <span class="message-meta" id="message-author">From someone who's been where you are</span>
                         <span class="chain-count">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
@@ -830,7 +891,7 @@
                     <div class="message-label">Someone Believes In You</div>
                     <p class="message-text" id="browse-message-content"></p>
                     <div class="message-footer">
-                        <span class="message-meta">From someone who gets it</span>
+                        <span class="message-meta" id="browse-message-author">From someone who gets it</span>
                         <span class="chain-count">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
@@ -869,6 +930,17 @@
                             maxlength="500"
                         ></textarea>
                         <span class="char-count" id="first-char-count">0 / 500</span>
+                    </div>
+
+                    <div class="identity-fields">
+                        <div class="input-group">
+                            <label for="first-name">Your first name</label>
+                            <input type="text" id="first-name" placeholder="Dave" maxlength="50">
+                        </div>
+                        <div class="input-group">
+                            <label for="first-location">Where you're from</label>
+                            <input type="text" id="first-location" placeholder="England" maxlength="100">
+                        </div>
                     </div>
 
                     <button class="btn-primary" id="first-send-btn" disabled>
@@ -948,11 +1020,15 @@
                 }
             }
 
-            async saveMessage(content) {
+            async saveMessage(content, name, location) {
                 try {
                     const { data, error } = await this.supabase
                         .from('messages')
-                        .insert([{ content }])
+                        .insert([{ 
+                            content,
+                            author_name: name || null,
+                            author_location: location || null
+                        }])
                         .select()
                         .single();
 
@@ -971,22 +1047,12 @@
                         .select('*', { count: 'exact', head: true })
                         .eq('is_approved', true);
 
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    
-                    const { count: todayCount } = await this.supabase
-                        .from('messages')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('is_approved', true)
-                        .gte('created_at', today.toISOString());
-
                     return {
-                        total: total || 0,
-                        today: todayCount || 0
+                        total: total || 0
                     };
                 } catch (e) {
                     console.error('Error fetching stats:', e);
-                    return { total: 0, today: 0 };
+                    return { total: 0 };
                 }
             }
 
@@ -1015,7 +1081,19 @@
             async updateStats() {
                 const stats = await this.getStats();
                 document.getElementById('total-messages').textContent = stats.total.toLocaleString();
-                document.getElementById('messages-today').textContent = stats.today.toLocaleString();
+                document.getElementById('people-count').textContent = stats.total.toLocaleString();
+            }
+
+            formatAuthor(name, location) {
+                if (name && location) {
+                    return `From ${name} in ${location}`;
+                } else if (name) {
+                    return `From ${name}`;
+                } else if (location) {
+                    return `From someone in ${location}`;
+                } else {
+                    return `From someone who's been where you are`;
+                }
             }
 
             showScreen(screenId) {
@@ -1029,14 +1107,11 @@
                 try {
                     await this.updateStats();
                     
-                    // Check if there are any messages
                     const hasMessages = await this.hasMessages();
                     
                     if (hasMessages) {
-                        // Show write screen - they must contribute first
                         this.showScreen('write-screen');
                     } else {
-                        // First person ever - show first screen
                         this.showScreen('first-screen');
                     }
                 } catch (e) {
@@ -1049,6 +1124,7 @@
                 const message = await this.getRandomMessage();
                 if (message) {
                     document.getElementById('message-content').textContent = message.content;
+                    document.getElementById('message-author').textContent = this.formatAuthor(message.author_name, message.author_location);
                     const position = await this.getMessagePosition(message.id);
                     document.getElementById('chain-number').textContent = `LINK #${position}`;
                 }
@@ -1060,6 +1136,7 @@
                 const message = await this.getRandomMessage();
                 if (message) {
                     document.getElementById('browse-message-content').textContent = message.content;
+                    document.getElementById('browse-message-author').textContent = this.formatAuthor(message.author_name, message.author_location);
                     const position = await this.getMessagePosition(message.id);
                     document.getElementById('browse-chain-number').textContent = `LINK #${position}`;
                 }
@@ -1071,6 +1148,8 @@
                 const textarea = document.getElementById('user-message');
                 const charCount = document.getElementById('char-count');
                 const sendBtn = document.getElementById('send-btn');
+                const nameInput = document.getElementById('user-name');
+                const locationInput = document.getElementById('user-location');
 
                 if (textarea) {
                     textarea.addEventListener('input', () => {
@@ -1084,12 +1163,15 @@
                 if (sendBtn) {
                     sendBtn.addEventListener('click', async () => {
                         const message = textarea.value.trim();
+                        const name = nameInput ? nameInput.value.trim() : '';
+                        const location = locationInput ? locationInput.value.trim() : '';
+                        
                         if (message.length >= 10) {
                             sendBtn.disabled = true;
                             sendBtn.textContent = 'SENDING...';
                             
                             try {
-                                await this.saveMessage(message);
+                                await this.saveMessage(message, name, location);
                                 await this.updateStats();
                                 this.hasContributed = true;
                                 await this.showRevealScreen();
@@ -1106,6 +1188,8 @@
                 const firstTextarea = document.getElementById('first-message');
                 const firstCharCount = document.getElementById('first-char-count');
                 const firstSendBtn = document.getElementById('first-send-btn');
+                const firstNameInput = document.getElementById('first-name');
+                const firstLocationInput = document.getElementById('first-location');
 
                 if (firstTextarea) {
                     firstTextarea.addEventListener('input', () => {
@@ -1119,12 +1203,15 @@
                 if (firstSendBtn) {
                     firstSendBtn.addEventListener('click', async () => {
                         const message = firstTextarea.value.trim();
+                        const name = firstNameInput ? firstNameInput.value.trim() : '';
+                        const location = firstLocationInput ? firstLocationInput.value.trim() : '';
+                        
                         if (message.length >= 10) {
                             firstSendBtn.disabled = true;
                             firstSendBtn.textContent = 'SENDING...';
                             
                             try {
-                                await this.saveMessage(message);
+                                await this.saveMessage(message, name, location);
                                 await this.updateStats();
                                 this.showScreen('first-success-screen');
                             } catch (e) {
